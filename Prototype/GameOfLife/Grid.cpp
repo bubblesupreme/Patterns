@@ -2,7 +2,7 @@
 #include "GeneBooth.h"
 #include "SimpleBooth.h"
 
-Grid::Grid(const size_t width, const size_t height, bool gene)
+Grid::Grid(const size_t width, const size_t height, bool boothes_with_gene)
     :width(width), height(height)
 {
     boothes = std::vector<std::shared_ptr<Booth>>(width*height);
@@ -10,12 +10,12 @@ Grid::Grid(const size_t width, const size_t height, bool gene)
     {
         for (int j = 0; j < width; j++)
         {
-            if (gene)
+            if (boothes_with_gene)
             {
                 std::vector<char> booth_gene(9);
-                for (int i = 0; i < 9; i++)
+                for (auto& gene: booth_gene)
                 {
-                    booth_gene [i] = rand() % 2;
+                    gene = rand() % 2;
                 }
                 boothes [i*width + j] = std::make_unique<GeneBooth>(i, j, false, booth_gene);
             }
@@ -43,11 +43,10 @@ bool Grid::isboolAliveAt(int x, int y) const
 
 void Grid::draw(sf::RenderWindow &window) const
 {
-    for (int x = 0; x < height; x++) {
-        for (int y = 0; y < width; y++) {
-            boothes.at(x*width + y)->updateColor();
-            boothes.at(x*width + y)->draw(window);
-        }
+    for (auto booth : boothes)
+    {
+        booth->updateColor();
+        booth->draw(window);
     }
 }
 
@@ -56,22 +55,20 @@ Grid::Grid(const Grid& clonable)
     width = clonable.width;
     height = clonable.height;
     boothes = std::vector<std::shared_ptr<Booth>>(width*height);
-    for (int x = 0; x < height; x++) {
-        for (int y = 0; y < width; y++) {
-            boothes [x*width + y] = clonable.boothes.at(x*width + y)->clone();
-        }
+    for (int i=0; i<boothes.size();i++)
+    {
+        boothes [i] = clonable.boothes.at(i)->clone();
     }
 }
 
-bool Grid::aliveCount() const
+int Grid::aliveCount() const
 {
     int count = 0;
-    for (int x = 0; x < height; x++) {
-        for (int y = 0; y < width; y++) {
-            if (boothes.at(x*width + y)->isAlive())
-            {
-                count++;
-            }
+    for (auto booth : boothes)
+    {
+        if (booth->isAlive())
+        {
+            count++;
         }
     }
     return count;
@@ -79,10 +76,9 @@ bool Grid::aliveCount() const
 
 void Grid::clear()
 {
-    for (int x = 0; x < height; x++) {
-        for (int y = 0; y < width; y++) {
-            boothes.at(x*width + y)->setAlive(false);
-        }
+    for (auto booth : boothes)
+    {
+        booth->setAlive(false);
     }
 }
 
@@ -106,36 +102,42 @@ void Grid::update()
     std::vector<char> boothesToDie(width*height);
     std::vector<char>  boothesToGetLive(width*height);
 
-    for (int x = 0; x < height; x++) {
-        for (int y = 0; y < width; y++) {
-
+    for (int x = 0; x < height; x++)
+    {
+        for (int y = 0; y < width; y++)
+        {
             int neighbours = 0;
 
-            if ((x == 0) && (y == 0)) {
+            if ((x == 0) && (y == 0))
+            {
                 check_neighbour(neighbours, boothes.at((x + 1)*width + y));
                 check_neighbour(neighbours, boothes.at((x + 1)*width + y + 1));
                 check_neighbour(neighbours, boothes.at(x*width + y + 1));
             }
 
-            else if ((x == height - 1) && (y == 0)) {
+            else if ((x == height - 1) && (y == 0))
+            {
                 check_neighbour(neighbours, boothes.at((x - 1)*width + y));
                 check_neighbour(neighbours, boothes.at((x - 1)*width + y + 1));
                 check_neighbour(neighbours, boothes.at(x*width + y + 1));
             }
 
-            else if ((x == 0) && (y == width - 1)) {
+            else if ((x == 0) && (y == width - 1))
+            {
                 check_neighbour(neighbours, boothes.at((x + 1)*width + y));
                 check_neighbour(neighbours, boothes.at((x + 1)*width + y - 1));
                 check_neighbour(neighbours, boothes.at(x*width + y - 1));
             }
 
-            else if ((x == height - 1) && (y == width - 1)) {
+            else if ((x == height - 1) && (y == width - 1))
+            {
                 check_neighbour(neighbours, boothes.at((x - 1)*width + y));
                 check_neighbour(neighbours, boothes.at((x - 1)*width + y - 1));
                 check_neighbour(neighbours, boothes.at(x*width + y - 1));
             }
 
-            else if (x == 0) {
+            else if (x == 0)
+            {
                 check_neighbour(neighbours, boothes.at((x + 1)*width + y - 1));
                 check_neighbour(neighbours, boothes.at((x + 1)*width + y));
                 check_neighbour(neighbours, boothes.at((x + 1)*width + y + 1));
@@ -144,7 +146,8 @@ void Grid::update()
                 check_neighbour(neighbours, boothes.at(x*width + y + 1));
             }
 
-            else if (x == height - 1) {
+            else if (x == height - 1)
+            {
                 check_neighbour(neighbours, boothes.at((x - 1)*width + y - 1));
                 check_neighbour(neighbours, boothes.at((x - 1)*width + y));
                 check_neighbour(neighbours, boothes.at((x - 1)*width + y + 1));
@@ -163,7 +166,8 @@ void Grid::update()
                 check_neighbour(neighbours, boothes.at((x + 1)*width + y));
             }
 
-            else if (y == width - 1) {
+            else if (y == width - 1)
+            {
                 check_neighbour(neighbours, boothes.at((x - 1)*width + y - 1));
                 check_neighbour(neighbours, boothes.at(x*width + y - 1));
                 check_neighbour(neighbours, boothes.at((x + 1)*width + y - 1));
@@ -172,7 +176,8 @@ void Grid::update()
                 check_neighbour(neighbours, boothes.at((x + 1)*width + y));
             }
 
-            else {
+            else
+            {
                 check_neighbour(neighbours, boothes.at((x - 1)*width + y - 1));
                 check_neighbour(neighbours, boothes.at((x - 1)*width + y));
                 check_neighbour(neighbours, boothes.at((x - 1)*width + y + 1));
@@ -185,28 +190,33 @@ void Grid::update()
                 check_neighbour(neighbours, boothes.at((x + 1)*width + y + 1));
             }
 
-            if (boothes.at(x*width + y)->isAlive()) {
-                if ((neighbours != 2) && (neighbours != 3)) {
+            if (boothes.at(x*width + y)->isAlive())
+            {
+                if ((neighbours != 2) && (neighbours != 3))
+                {
                     boothesToDie [x*width + y] = true;
                 }
             }
 
-            else {
-                if (neighbours == 3) {
+            else
+            {
+                if (neighbours == 3)
+                {
                     boothesToGetLive [x*width + y] = true;
                 }
             }
         }
     }
 
-    for (int x = 0; x < height; x++) {
-        for (int y = 0; y < width; y++) {
-            if (boothesToDie [x*width + y]) {
-                boothes.at(x*width + y)->setAlive(false);
-            }
-            if (boothesToGetLive [x*width + y]) {
-                boothes.at(x*width + y)->setAlive(true);
-            }
+    for (int i = 0; i < boothes.size(); i++)
+    {
+        if (boothesToDie [i])
+        {
+            boothes [i]->setAlive(false);
+        }
+        if (boothesToGetLive [i])
+        {
+            boothes [i]->setAlive(true);
         }
     }
     if (aliveCount() == 0)
@@ -224,17 +234,13 @@ bool operator==(const Grid& lhs, const Grid& rhs)
 {
     if (lhs.getSize() == rhs.getSize())
     {
-        size_t width = lhs.getSize().first;
-        size_t height = lhs.getSize().second;
-        for (int x = 0; x < height; x++)
+        auto lhs_boothes = lhs.getBoothes();
+        auto rhs_boothes = rhs.getBoothes();
+        for (int i = 0; i < lhs_boothes.size(); i++)
         {
-            for (int y = 0; y < width; y++)
+            if (!(*lhs_boothes [i] == *rhs_boothes [i]))
             {
-                if (!(*lhs.getBoothes().at(x*width + y) ==
-                    *rhs.getBoothes().at(x*width + y)))
-                {
-                    return false;
-                }
+                return false;
             }
         }
     }

@@ -56,6 +56,9 @@ void work_check()
     vec2 = std::move(vec);
     assert(vec2.size() == 4);
     assert(vec2.capacity() == DEFAULT_CAPACITY);
+    assert(*vec2.insert(12, 6) == 6);
+    assert(vec2.size() == 13);
+    assert(vec2.capacity() == DEFAULT_CAPACITY * 2);
 
 
 
@@ -85,12 +88,12 @@ void work_check()
     bool_vec.insert(1, false);
     std::cout << bool_vec << std::endl;
     assert(bool_vec [1] == false);
-    assert(bool_vec.insert(1, true) == true);
+    assert(*bool_vec.insert(1, true) == true);
     std::cout << bool_vec << std::endl;
     assert(bool_vec [1] == true);
     assert(bool_vec [3] == true);
     std::cout << bool_vec << std::endl;
-    assert(bool_vec.erase(2) == true);
+    assert(*bool_vec.erase(2) == true);
     assert(bool_vec [2] == true);
     std::cout << bool_vec << std::endl;
     assert(bool_vec.size() == 12);
@@ -120,6 +123,8 @@ void work_check()
     bool_vec2 = std::move(bool_vec);
     assert(bool_vec2.size() == 13);
     assert(bool_vec2 [12] == true);
+    assert(*bool_vec2.insert(16, true) == true);
+    assert(bool_vec2.size() == 17);
     assert(bool_vec2.capacity() == DEFAULT_CAPACITY * 2);
 
     Vector<bool> bool_vec3(3);

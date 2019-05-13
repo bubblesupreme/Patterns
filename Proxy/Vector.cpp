@@ -7,7 +7,11 @@
 
 unsigned int calculate_real_size(unsigned int size);
 unsigned int calculate_real_index(unsigned int index);
-void write_bit(unsigned char& changed_char, unsigned int index, bool bit);
+void write_bit(BOOL_BOX& changed_char, unsigned int index, bool bit);
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// templated vector <TData>
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 template <typename TData>
 Vector<TData>::Vector() noexcept
@@ -108,26 +112,34 @@ void Vector<TData>::initial_reverse()
 }
 
 template <typename TData>
-TData* Vector<TData>::insert(unsigned int index, const TData& val)
+typename Vector<TData>::iterator_v Vector<TData>::insert(unsigned int index, const TData& val)
 {
-    push_back(array_v [size_v - 1]);
-    for (unsigned int i = size_v - 1; i > index; --i)
+    if (index < size_v)
     {
-        array_v [i] = array_v [i - 1];
+        push_back(array_v [size_v - 1]);
+        for (unsigned int i = size_v - 1; i > index; --i)
+        {
+            array_v [i] = array_v [i - 1];
+        }
+    }
+    else
+    {
+        reserve(capacity_v * 2);
+        size_v = index + 1;
     }
     array_v [index] = val;
-    return &array_v [index];
+    return typename Vector<TData>::iterator_v(array_v+index);
 }
 
 template <typename TData>
-TData* Vector<TData>::erase(unsigned int index)
+typename Vector<TData>::iterator_v Vector<TData>::erase(unsigned int index)
 {
     for (unsigned int i = index; i < size_v - 1; i++)
     {
         array_v [i] = array_v [i + 1];
     }
     size_v--;
-    return &array_v [index];
+    return typename Vector<TData>::iterator_v(array_v + index);
 }
 
 
@@ -178,15 +190,15 @@ TData & Vector<TData>::operator[](unsigned int index) const
 }
 
 template <typename TData>
-TData * Vector<TData>::begin() const
+typename Vector<TData>::iterator_v Vector<TData>::begin() const
 {
-    return array_v;
+    return typename Vector<TData>::iterator_v(array_v);
 }
 
 template <typename TData>
-TData * Vector<TData>::end() const
+typename Vector<TData>::iterator_v Vector<TData>::end() const
 {
-    return &array_v [size_v];
+    return typename Vector<TData>::iterator_v(array_v + size_v);
 }
 
 template <typename TData>
@@ -201,15 +213,66 @@ TData&  Vector<TData>::back() const
     return array_v [size_v-1];
 }
 
-template <typename TData>
-std::ostream& operator<<(std::ostream &os, const Vector<TData>& vec)
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// iterator for templated vector <TData>
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+template<typename TData>
+Vector<TData>::iterator_v::iterator_v(pointer buff) noexcept
+    :buff_v(buff)
 {
-    for (auto it = vec.begin(); it != vec.end(); it++)
-    {
-        os << *it << " ";
-    }
-    return os;
 }
+
+template<typename TData>
+typename Vector<TData>::iterator_v& Vector<TData>::iterator_v::operator++()
+{
+    buff_v++;
+    return *this;
+}
+
+template<typename TData>
+typename Vector<TData>::iterator_v Vector<TData>::iterator_v::operator++(int)
+{
+    auto iterator_v = *this;
+    ++*this;
+    return iterator_v;
+}
+
+template<typename TData>
+typename Vector<TData>::iterator_v& Vector<TData>::iterator_v::operator--()
+{
+    buff_v--;
+    return *this;
+}
+
+template<typename TData>
+typename Vector<TData>::iterator_v Vector<TData>::iterator_v::operator--(int)
+{
+    auto iterator_v = *this;
+    --*this;
+    return iterator_v;
+}
+
+template<typename TData>
+bool Vector<TData>::iterator_v::operator==(const typename Vector<TData>::iterator_v& iter)
+{
+    return buff_v == iter.buff_v;
+}
+
+template<typename TData>
+bool Vector<TData>::iterator_v::operator!=(const typename Vector<TData>::iterator_v& iter)
+{
+    return buff_v != iter.buff_v;
+}
+
+template<typename TData>
+typename Vector<TData>::iterator_v::reference Vector<TData>::iterator_v::operator*()
+{
+    return *buff_v;
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Vector of bools
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 Vector<bool>::Vector() noexcept
@@ -222,7 +285,7 @@ Vector<bool>::Vector(unsigned int size)
 {
 }
 
-Vector<bool>::Vector(unsigned int size, const BoolReference& val)
+Vector<bool>::Vector(unsigned int size, const Vector<bool>::BoolReference& val)
     : Vector(size, (1 << val.index)  &  val.cell)
 {
 }
@@ -231,7 +294,7 @@ Vector<bool>::Vector(unsigned int size, bool val)
     : size_v(size), capacity_v(size_v)
 {
     unsigned int real_size = calculate_real_size(size_v);
-    array_v = new unsigned char [real_size];
+    array_v = new BOOL_BOX [real_size];
     for (unsigned int i = 0; i < real_size; i++)
     {
         for (unsigned int j = 0; j < CELL_SIZE_BIT; j++)
@@ -245,7 +308,7 @@ Vector<bool>::Vector(const Vector& vec) noexcept
     :size_v(vec.size_v), capacity_v(vec.capacity_v)
 {
     unsigned int real_size = calculate_real_size(size_v);
-    array_v = new unsigned char [real_size];
+    array_v = new BOOL_BOX [real_size];
     memcpy(array_v, vec.array_v, real_size * sizeof(CELL_SIZE_BYTE));
 }
 
@@ -282,7 +345,7 @@ Vector<bool>& Vector<bool>::operator=(const Vector&& vec)
     return *this;
 }
 
-void Vector<bool>::push_back(const BoolReference& val)
+void Vector<bool>::push_back(const Vector<bool>::BoolReference& val)
 {
     push_back((1 << val.index)  &  val.cell);
 }
@@ -312,7 +375,7 @@ void Vector<bool>::reserve(unsigned int new_cap)
 {
     unsigned int new_real_size = calculate_real_size(new_cap);
     unsigned int real_size = calculate_real_size(size_v);
-    unsigned char* array_new = new unsigned char [new_real_size];
+    BOOL_BOX* array_new = new BOOL_BOX [new_real_size];
     capacity_v = new_cap;
     memcpy(array_new, array_v, real_size * sizeof(CELL_SIZE_BYTE));
     delete [] array_v;
@@ -322,49 +385,60 @@ void Vector<bool>::reserve(unsigned int new_cap)
 void Vector<bool>::initial_reverse()
 {
     capacity_v = DEFAULT_CAPACITY;
-    array_v = new unsigned char [calculate_real_size(capacity_v)];
+    array_v = new BOOL_BOX [calculate_real_size(capacity_v)];
 }
 
-BoolReference Vector<bool>::insert(unsigned int index, const BoolReference& val)
+typename Vector<bool>::iterator_v Vector<bool>::insert(unsigned int index, const Vector<bool>::BoolReference& val)
 {
     return insert(index, (1 << val.index)  &  val.cell);
 }
 
-BoolReference Vector<bool>::insert(unsigned int index, bool val)
+typename Vector<bool>::iterator_v Vector<bool>::insert(unsigned int index, bool val)
 {
     size_v++;
+    unsigned int real_index = calculate_real_index(index);
+    unsigned int cell_index = index % CELL_SIZE_BIT;
     if (size_v >= capacity_v)
     {
         reserve(capacity_v * 2);
     }
-    unsigned int real_size = calculate_real_size(size_v);
-    unsigned int real_index = calculate_real_index(index);
-    unsigned int cell_index = index % CELL_SIZE_BIT;
-    unsigned char previous_state = array_v [real_index];
-    bool docking_bit = (1 << 0)  &  array_v [real_index];
-    array_v [real_index] = array_v [real_index] >> 1;
-    for (unsigned int i = 0; i < cell_index; i++)
+    if (index < size_v)
     {
-        write_bit(array_v [real_index], i, (1 << i)  &  previous_state);
+        unsigned int real_size = calculate_real_size(size_v);
+        BOOL_BOX previous_state = array_v [real_index];
+        bool docking_bit = (1 << 0)  &  array_v [real_index];
+        array_v [real_index] = array_v [real_index] >> 1;
+        for (unsigned int i = 0; i < cell_index; i++)
+        {
+            write_bit(array_v [real_index], i, (1 << i)  &  previous_state);
+        }
+        for (unsigned int i = real_index + 1; i < real_size; i++)
+        {
+            bool first_bit = (bool((1 << 0)  &  array_v [i]));
+            array_v [i] = array_v [i] >> 1;
+            write_bit(array_v [i], CELL_SIZE_BIT - 1, docking_bit);
+            docking_bit = first_bit;
+        }
+    }
+    else
+    {
+        if (index >= capacity_v)
+        {
+            reserve(capacity_v * 2);
+        }
+        size_v = index + 1;
     }
     write_bit(array_v [real_index], cell_index, val);
-    for (unsigned int i = real_index + 1; i < real_size; i++)
-    {
-        bool first_bit = (bool((1 << 0)  &  array_v [i]));
-        array_v [i] = array_v [i] >> 1;
-        write_bit(array_v [i], CELL_SIZE_BIT - 1, docking_bit);
-        docking_bit = first_bit;
-    }
-    return BoolReference(array_v [real_index], cell_index);
+    return typename Vector<bool>::iterator_v(&array_v [real_index], cell_index);
 }
 
-BoolReference Vector<bool>::erase(unsigned int index)
+typename Vector<bool>::iterator_v Vector<bool>::erase(unsigned int index)
 {
     size_v--;
     unsigned int real_size = calculate_real_size(size_v);
     unsigned int real_index = calculate_real_index(index);
     unsigned int cell_index = index % CELL_SIZE_BIT;
-    unsigned char previous_state = array_v [real_index];
+    BOOL_BOX previous_state = array_v [real_index];
     array_v [real_index] = array_v [real_index] << 1;
     for (unsigned int i = 0; i < cell_index; i++)
     {
@@ -384,7 +458,7 @@ BoolReference Vector<bool>::erase(unsigned int index)
             }
         }
     }
-    return BoolReference(array_v [real_index], cell_index);
+    return typename Vector<bool>::iterator_v(&array_v [real_index], cell_index);
 }
 
 void Vector<bool>::pop_back()
@@ -412,76 +486,148 @@ unsigned int Vector<bool>::capacity() const
     return capacity_v;
 }
 
-BoolReference Vector<bool>::at(unsigned int index) const
+Vector<bool>::BoolReference Vector<bool>::at(unsigned int index) const
 {
     if (index < size_v)
     {
         unsigned int real_index = calculate_real_index(index);
         unsigned int cell_index = index % CELL_SIZE_BIT;
-        return BoolReference(array_v [real_index], cell_index);
+        return Vector<bool>::BoolReference(array_v [real_index], cell_index);
     }
     throw std::out_of_range("index out of range");
 }
 
-BoolReference Vector<bool>::operator[](unsigned int index) const
+Vector<bool>::BoolReference Vector<bool>::operator[](unsigned int index) const
 {
     unsigned int real_index = calculate_real_index(index);
     unsigned int cell_index = index % CELL_SIZE_BIT;
-    return BoolReference(array_v [real_index], cell_index);
+    return Vector<bool>::BoolReference(array_v [real_index], cell_index);
 }
 
-BoolReference Vector<bool>::begin() const
+typename Vector<bool>::iterator_v Vector<bool>::begin() const
 {
-    return BoolReference(array_v [0], 0);
+    return typename Vector<bool>::iterator_v(array_v, 0);
 }
 
 
-BoolReference Vector<bool>::end() const
+typename Vector<bool>::iterator_v Vector<bool>::end() const
 {
-    return BoolReference(array_v [calculate_real_index(size_v)], size_v % CELL_SIZE_BIT);
+    return typename Vector<bool>::iterator_v(&array_v [calculate_real_index(size_v)], size_v % CELL_SIZE_BIT);
 }
 
-BoolReference Vector<bool>::front() const
+Vector<bool>::BoolReference Vector<bool>::front() const
 {
-    return BoolReference(array_v [0], 0);
+    return Vector<bool>::BoolReference(array_v [0], 0);
 }
 
-BoolReference Vector<bool>::back() const
+Vector<bool>::BoolReference Vector<bool>::back() const
 {
-    return BoolReference(array_v [calculate_real_index(size_v)], size_v % CELL_SIZE_BIT - 1);
+    return Vector<bool>::BoolReference(array_v [calculate_real_index(size_v)], size_v % CELL_SIZE_BIT - 1);
 }
 
-std::ostream& operator<<(std::ostream &os, const Vector<bool>& vec)
-{
-    for (unsigned int i = 0; i < vec.size(); i++)
-    {
-        os << vec.at(i) << " ";
-    }
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// proxy class BoolReference for vector of bools
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    return os;
-}
-
-
-
-BoolReference& BoolReference::operator=(bool val) noexcept
+Vector<bool>::BoolReference& Vector<bool>::BoolReference::operator=(bool val) noexcept
 {
     write_bit(cell, index, val);
     return *this;
 }
 
-BoolReference& BoolReference::operator=(const BoolReference& val) noexcept
+Vector<bool>::BoolReference& Vector<bool>::BoolReference::operator=(const Vector<bool>::BoolReference& val) noexcept
 {
     write_bit(cell, index, (1 << val.index)  &  val.cell);
     return *this;
 }
 
-BoolReference::BoolReference(unsigned char &cell, unsigned char index)
+Vector<bool>::BoolReference::BoolReference(BOOL_BOX &cell, unsigned char index)
     : cell(cell), index(index)
 {}
 
-BoolReference::operator bool() const noexcept
+Vector<bool>::BoolReference::operator bool() const noexcept
 {
     return ((1 << index)  &  cell);
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// iterator for vector of bools
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+Vector<bool>::iterator_v::iterator_v(pointer buff, unsigned int cell_index) noexcept
+    :buff_v(buff), cell_index(cell_index)
+{
+}
+
+typename Vector<bool>::iterator_v& Vector<bool>::iterator_v::operator++()
+{
+    if (cell_index == 7)
+    {
+        cell_index = 0;
+        buff_v++;
+    }
+    else
+    {
+        cell_index++;
+    }
+    return *this;
+}
+
+typename Vector<bool>::iterator_v Vector<bool>::iterator_v::operator++(int)
+{
+    auto iterator_v = *this;
+    ++*this;
+    return iterator_v;
+}
+
+typename Vector<bool>::iterator_v& Vector<bool>::iterator_v::operator--()
+{
+    if (cell_index == 0)
+    {
+        cell_index = 7;
+        buff_v--;
+    }
+    else
+    {
+        cell_index--;
+    }
+    return *this;
+}
+
+typename Vector<bool>::iterator_v Vector<bool>::iterator_v::operator--(int)
+{
+    auto iterator_v = *this;
+    --*this;
+    return iterator_v;
+}
+
+bool Vector<bool>::iterator_v::operator==(const typename Vector<bool>::iterator_v& iter)
+{
+    return ((buff_v == iter.buff_v) && (cell_index == iter.cell_index));
+}
+
+bool Vector<bool>::iterator_v::operator!=(const typename Vector<bool>::iterator_v& iter)
+{
+    return !((buff_v == iter.buff_v) && (cell_index == iter.cell_index));
+}
+
+Vector<bool>::BoolReference Vector<bool>::iterator_v::operator*()
+{
+    return BoolReference(*buff_v, cell_index);
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// additional useful functions
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+template <typename TData>
+std::ostream& operator<<(std::ostream &os, const Vector<TData>& vec)
+{
+    for (auto it = vec.begin(); it != vec.end(); it++)
+    {
+        os << *it << " ";
+    }
+    return os;
 }
 
 unsigned int calculate_real_size(unsigned int size)
@@ -494,7 +640,7 @@ unsigned int calculate_real_index(unsigned int index)
     return calculate_real_size(index)-1;
 }
 
-void write_bit(unsigned char& changed_char, unsigned int index, bool bit)
+void write_bit(BOOL_BOX& changed_char, unsigned int index, bool bit)
 {
     if (bit)
     {

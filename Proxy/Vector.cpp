@@ -561,7 +561,7 @@ Vector<bool>::iterator_v::iterator_v(pointer buff, unsigned int cell_index) noex
 
 typename Vector<bool>::iterator_v& Vector<bool>::iterator_v::operator++()
 {
-    if (cell_index == 7)
+    if (cell_index == CELL_SIZE_BIT - 1)
     {
         cell_index = 0;
         buff_v++;
@@ -584,7 +584,7 @@ typename Vector<bool>::iterator_v& Vector<bool>::iterator_v::operator--()
 {
     if (cell_index == 0)
     {
-        cell_index = 7;
+        cell_index = CELL_SIZE_BIT - 1;
         buff_v--;
     }
     else

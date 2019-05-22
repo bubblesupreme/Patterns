@@ -9,29 +9,29 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.InputStreamReader;
 import java.io.BufferedReader;
+import java.io.IOException;
 
 
 public class HttpServer {
 
-    private static Router router;
+    private Router router;
     
-    public HttpServer()
+    public HttpServer(Router router)
     {
-        router = new Router();
-        router.add_route("/first", new FirstController());
-        router.add_route("/second", new SecondController());   
+        this.router=router;
     }
     
-    public static void main(String[] args) throws Throwable {
-        HttpServer http_server = new HttpServer();
+    public void listen() throws IOException, Throwable
+    {
         ServerSocket ss = new ServerSocket(8080);
         while (true) {
             Socket s = ss.accept();
             System.err.println("Client accepted");
             new Thread(new SocketProcessor(s)).start();
-        }    
+        }  
     }
-private static class SocketProcessor implements Runnable {
+    
+private class SocketProcessor implements Runnable {
 
         private Socket s;
         private InputStream is;
@@ -47,22 +47,17 @@ private static class SocketProcessor implements Runnable {
         public void run() {
             try {
                 HttpRequest http_request=readInputHeaders();
-                IController controller = 
-                        new LoggingControllerWrapper(
-                                router.choiceController(
-                                        http_request.getRequestLine().getUrl()));
                 switch (http_request.getRequestLine().getAction())
                 {
                     case "GET":
-                        writeResponse(controller.get(http_request));
+                        writeResponse(router.chooseController(http_request.getRequestLine().getUrl()).get(http_request));
                         break;
                     case "POST":
-                        writeResponse(controller.post(http_request));
+                        writeResponse(router.chooseController(http_request.getRequestLine().getUrl()).post(http_request));
                         break;
                     default:
                         break;
-                }
-//               
+                }               
             } catch (Throwable t) {
             } finally {
                 try {
@@ -73,9 +68,7 @@ private static class SocketProcessor implements Runnable {
             System.err.println("Client processing finished");
         }
          private void writeResponse(HttpResponse response) throws Throwable {
-            String str= response.toString();
-            System.out.print(str);
-            os.write(str.getBytes());
+            os.write(response.getResponse().getBytes());
             os.flush();
         }
 

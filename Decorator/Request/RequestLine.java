@@ -15,7 +15,7 @@ public class RequestLine {
     private String action;
     private String url;
     private Map<String, Object> parameters;
-    private String protocol_version;
+    private String protocolVersion;
     
     public RequestLine(String line) throws ParseException, IOException
     {
@@ -32,7 +32,7 @@ public class RequestLine {
         String[] requestUriItems = parseRequestUri(requestLineItems[1]);
         action = requestLineItems[0];
         url = requestUriItems[0];
-        protocol_version = requestLineItems[2];
+        protocolVersion = requestLineItems[2];
         parameters = UrlEncodedFormParse(
                 new ByteArrayInputStream(requestUriItems[1].getBytes()), 
                 requestUriItems[1].length());
@@ -94,6 +94,6 @@ public class RequestLine {
     
     public String getVersion()
     {
-        return protocol_version;
+        return protocolVersion;
     }
 }

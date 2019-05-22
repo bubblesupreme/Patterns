@@ -12,12 +12,12 @@ public class Router {
         router = new HashMap<String, IController>();
     }
     
-    public void add_route(String url, IController controller)
+    public void addRoute(String url, IController controller)
     {
         router.put(url, controller);
     }
     
-    public IController choiceController(String url)
+    public IController chooseController(String url)
     {
         return router.get(url);
     }

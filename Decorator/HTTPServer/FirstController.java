@@ -3,7 +3,6 @@ package HTTPServer;
 
 import Request.HttpRequest;
 import Response.HttpResponse;
-import Response.OKResponse;
 import Response.ResponseHeaders;
 import Response.ResponseLine;
 import java.io.ByteArrayInputStream;
@@ -18,7 +17,7 @@ public class FirstController implements IController{
         headers.addHeader("Content-Type", "text/html");
         headers.addHeader("Content-Length", "55");
         headers.addHeader("Connection", "close");
-        return new OKResponse(headers,
+        return HttpResponse.OKResponse(headers,
                 new ByteArrayInputStream("<html><body><h1>Hello from FirstController</h1></body></html>".getBytes(Charset.forName("UTF-8"))));
     }
     @Override

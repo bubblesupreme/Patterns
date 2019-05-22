@@ -6,12 +6,12 @@ import Response.HttpResponse;
 import java.util.logging.Logger;
 
 public class LoggingControllerWrapper implements IController{
-    private IController simple_controller;
+    private IController baseController;
     private Logger log;
     
-    public LoggingControllerWrapper(IController simple_controller)
+    public LoggingControllerWrapper(IController baseController)
     {
-        this.simple_controller=simple_controller;
+        this.baseController=baseController;
         log=Logger.getLogger(LoggingControllerWrapper.class.getName());
     }
             
@@ -19,12 +19,12 @@ public class LoggingControllerWrapper implements IController{
     public HttpResponse get(HttpRequest request)
     {
         log.info("GET method was called");
-        return simple_controller.get(request);
+        return baseController.get(request);
     }
     @Override
     public HttpResponse post(HttpRequest request)
     {
         log.info("POST method was called");
-        return simple_controller.post(request);
+        return baseController.post(request);
     }
 }

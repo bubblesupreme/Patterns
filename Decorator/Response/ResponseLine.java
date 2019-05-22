@@ -2,19 +2,19 @@
 package Response;
 
 public class ResponseLine {
-    public String protocol_version;
+    public String protocolVersion;
     public int status;
-    public String reason_phrase;
+    public String reasonPhrase;
 
     public ResponseLine(String protocol_version, int status, String reason_phrase) {
-        this.protocol_version = protocol_version;
+        this.protocolVersion = protocol_version;
         this.status = status;
-        this.reason_phrase = reason_phrase;
+        this.reasonPhrase = reason_phrase;
     }
 
     @Override
     public String toString()
     {
-        return protocol_version+" "+status+" "+reason_phrase;
+        return protocolVersion+" "+status+" "+reasonPhrase;
     }
 }

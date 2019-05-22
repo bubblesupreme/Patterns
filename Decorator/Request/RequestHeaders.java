@@ -6,16 +6,16 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class RequestHeaders {
-    private Map<String, String> request_headers;
+    private Map<String, String> requestHeaders;
     
     public RequestHeaders()
     {
-        request_headers=new HashMap<String, String>();
+        requestHeaders=new HashMap<String, String>();
     }
     
     public void addHeader(String name, String value)
     {
-        request_headers.put(name, value);
+        requestHeaders.put(name, value);
     }
     
     public void addHeader(String headerLine) throws ParseException
@@ -35,6 +35,6 @@ public class RequestHeaders {
     
     public Map<String, String> getHeaders()
     {
-        return request_headers;
+        return requestHeaders;
     }
 }

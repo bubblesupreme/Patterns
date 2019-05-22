@@ -8,40 +8,40 @@ import java.text.ParseException;
 import java.util.Map;
 
 public class HttpRequest {
-    private RequestLine req_line;
-    private RequestHeaders req_headers;
-    private RequestMessage req_msg;
+    private RequestLine reqLine;
+    private RequestHeaders reqHeaders;
+    private RequestBody reqBody;
     public HttpRequest(BufferedReader request) throws IOException, ParseException
     {
-        req_line= new RequestLine(request.readLine());
-        req_headers = new RequestHeaders();
+        reqLine= new RequestLine(request.readLine());
+        reqHeaders = new RequestHeaders();
         while(true) {
-                String header_line= request.readLine();
-                if(header_line == null || header_line.trim().length() == 0) {
+                String headerLine= request.readLine();
+                if(headerLine == null || headerLine.trim().length() == 0) {
                     break;
                 }
                 else
                 {
-                    req_headers.addHeader(header_line);
+                    reqHeaders.addHeader(headerLine);
                 }
             }
         if (checkMessage())
         {
-            req_msg = new RequestMessage(new ByteArrayInputStream(request.readLine().getBytes()));
+            reqBody = new RequestBody(new ByteArrayInputStream(request.readLine().getBytes()));
         }
         else
         {
-            req_msg = new RequestMessage();
+            reqBody = new RequestBody();
         }
     }
     
     private boolean checkMessage()
     {
-        for (Map.Entry<String, String> req_header : 
-                req_headers.getHeaders().entrySet())
+        for (Map.Entry<String, String> reqHeader : 
+                reqHeaders.getHeaders().entrySet())
         {
-            if (req_header.getKey().equals("Content-Length") 
-                    && req_header.getValue().equals("0"))
+            if (reqHeader.getKey().equals("Content-Length") 
+                    && reqHeader.getValue().equals("0"))
             {
                 return true;
             }
@@ -51,16 +51,16 @@ public class HttpRequest {
     
     public RequestLine getRequestLine()
     {
-        return req_line;
+        return reqLine;
     }
     
     public RequestHeaders getRequestHeaders()
     {
-        return req_headers;
+        return reqHeaders;
     }
     
-    public RequestMessage getRequestMessage()
+    public RequestBody getRequestBody()
     {
-        return req_msg;
+        return reqBody;
     }
 }
